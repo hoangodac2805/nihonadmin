@@ -4,12 +4,16 @@ import noavatar from "../assets/noavatar.jpeg";
 import { SidebarList } from "../datas/SidebarList";
 import { ISidebarList, ISidebarListItem } from "../types/SidebarListType";
 import CNavLink from "../components/dashboard/NavLink";
+import useAuth from "../customHooks/useAuth";
+import { useNavigate } from "react-router-dom";
 
 interface IDashboardProps {}
 
 
 const Dashboard: React.FC<IDashboardProps> = ({}: IDashboardProps) => {
- 
+  const { logout} = useAuth();
+  const navigate = useNavigate();
+  
   return (
     <main className="min-h-screen flex">
       {/* Sidebar */}
@@ -23,9 +27,9 @@ const Dashboard: React.FC<IDashboardProps> = ({}: IDashboardProps) => {
           <p className="">hoangodac@gmail.com</p>
           <div
             onClick={() => {
-              if (confirm("Do you want to log out?")) {
-                alert("Log out successfully");
-              }
+              logout().then(()=>{
+                navigate("/login");
+              })
             }}
             className="mt-4 rounded-md border border-neutral-400 px-3 py-1 transition cursor-pointer hover:text-white hover:bg-neutral-400"
           >
@@ -41,7 +45,7 @@ const Dashboard: React.FC<IDashboardProps> = ({}: IDashboardProps) => {
 
                 <div className="pl-4 mt-1">
                   {sidebarItem.children?.map((item: ISidebarListItem) => (
-                    <CNavLink sidebarLink={item} />
+                    <CNavLink key={item.label}  sidebarLink={item} />
                   ))}
                 </div>
 

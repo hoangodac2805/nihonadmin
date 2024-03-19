@@ -9,7 +9,11 @@ import { AuthProvider, RequireAuth } from "./customHooks/useAuth.tsx";
 const router = createBrowserRouter([
   {
     path: "/",
-    element: <RequireAuth><Dashboard /></RequireAuth>,
+    element: (
+      <RequireAuth>
+        <Dashboard />
+      </RequireAuth>
+    ),
     children: [
       {
         path: "/courses",
@@ -30,8 +34,8 @@ const router = createBrowserRouter([
 ]);
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
-    <AuthProvider>
-      <RouterProvider router={router} />
-    </AuthProvider>
+      <AuthProvider>
+        <RouterProvider router={router} />
+      </AuthProvider>
   </React.StrictMode>
 );
