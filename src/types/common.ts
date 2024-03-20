@@ -7,7 +7,7 @@ export type TAxiosRes<D> = Omit<AxiosResponse,"data"> & {
 
 export interface IResData<D> {
     status: boolean,
-    data?: D,
+    data: D,
     message?: string
 }
 

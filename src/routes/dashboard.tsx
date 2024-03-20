@@ -11,7 +11,7 @@ interface IDashboardProps {}
 
 
 const Dashboard: React.FC<IDashboardProps> = ({}: IDashboardProps) => {
-  const { logout} = useAuth();
+  const { logout,authedEmail} = useAuth();
   const navigate = useNavigate();
   
   return (
@@ -24,7 +24,7 @@ const Dashboard: React.FC<IDashboardProps> = ({}: IDashboardProps) => {
               <img src={noavatar} alt="avatar" />
             </div>
           </div>
-          <p className="">hoangodac@gmail.com</p>
+          <p className="">{authedEmail}</p>
           <div
             onClick={() => {
               logout().then(()=>{

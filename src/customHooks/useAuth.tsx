@@ -4,6 +4,7 @@ import { authenticationService } from "../services/api/authenticationApi";
 import useLoading from "./useLoading";
 interface AuthContextInterface {
   authed: boolean;
+  authedEmail?:string;
   login: (user: { email: string; password: string }) => Promise<void>;
   logout: () => Promise<void>;
 }
@@ -12,6 +13,8 @@ const authContext = React.createContext<AuthContextInterface | null>(null);
 
 function useAuth(): AuthContextInterface {
   const [authed, setAuthed] = useState(false);
+  const [authedEmail, setAuthedEmail] = useState<string>('');
+
   const loadingStore = useLoading();
   useEffect(() => {
     const checkLoginStatus = async () => {
@@ -19,6 +22,7 @@ function useAuth(): AuthContextInterface {
         loadingStore.setLoadingOn();
         const response = await authenticationService.loginByCookie();
         if (response.status == 200) {
+          setAuthedEmail(response.data.data?.email)
           setAuthed(true);
         }
       } catch (error) {
@@ -33,6 +37,7 @@ function useAuth(): AuthContextInterface {
 
   return {
     authed,
+    authedEmail,
     login: (user) =>
       new Promise(async (res) => {
         try {
