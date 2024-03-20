@@ -5,6 +5,7 @@ import "./index.css";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import Login from "./routes/login.tsx";
 import { AuthProvider, RequireAuth } from "./customHooks/useAuth.tsx";
+import Loading from "./components/Loading.tsx";
 
 const router = createBrowserRouter([
   {
@@ -31,11 +32,16 @@ const router = createBrowserRouter([
     path: "/login",
     element: <Login />,
   },
+  {
+    path: "/loading",
+    element: <Loading />
+  }
 ]);
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
-      <AuthProvider>
-        <RouterProvider router={router} />
-      </AuthProvider>
+    <AuthProvider>
+      <RouterProvider router={router} />
+      <Loading />
+    </AuthProvider>
   </React.StrictMode>
 );
