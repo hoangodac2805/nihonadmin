@@ -2,6 +2,9 @@ import React, { useState, useContext, ReactNode, useEffect } from "react";
 import { Navigate } from "react-router-dom";
 import { authenticationService } from "../services/api/authenticationApi";
 import useLoading from "./useLoading";
+import toast from 'react-hot-toast';
+import axios from "axios";
+
 interface AuthContextInterface {
   authed: boolean;
   authedEmail?:string;
@@ -39,15 +42,21 @@ function useAuth(): AuthContextInterface {
     authed,
     authedEmail,
     login: (user) =>
+    
       new Promise(async (res) => {
         try {
           loadingStore.setLoadingOn();
           const response = await authenticationService.login(user);
           if (response.status == 200) {
+            toast.success(response.data.message);
             setAuthed(true);
           }
         } catch (error) {
-
+          if(axios.isAxiosError(error)){
+            toast.error(error.response?.data.message);
+          }else{
+            toast.error("Login failure!!! Please try again");
+          }
         } finally {
           loadingStore.setLoadingOff();
         }

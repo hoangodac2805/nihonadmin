@@ -20,7 +20,7 @@ const Login = () => {
 
   const onSubmit: SubmitHandler<IInputs> = (data) => {
     login(data).then(() => {
-      navigate("/");
+      // navigate("/");
     });
   }
 

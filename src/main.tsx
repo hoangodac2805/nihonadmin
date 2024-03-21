@@ -6,7 +6,8 @@ import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import Login from "./routes/login.tsx";
 import { AuthProvider, RequireAuth } from "./customHooks/useAuth.tsx";
 import Loading from "./components/Loading.tsx";
-
+import { Toaster } from 'react-hot-toast';
+import Courses from "./routes/Courses.tsx";
 const router = createBrowserRouter([
   {
     path: "/",
@@ -18,7 +19,7 @@ const router = createBrowserRouter([
     children: [
       {
         path: "/courses",
-        element: <div>courses</div>,
+        element: <Courses/>,
         children: [
           {
             path: "add",
@@ -42,6 +43,7 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
     <AuthProvider>
       <RouterProvider router={router} />
       <Loading />
+      <Toaster/>
     </AuthProvider>
   </React.StrictMode>
 );

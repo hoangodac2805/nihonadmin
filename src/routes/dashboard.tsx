@@ -17,7 +17,7 @@ const Dashboard: React.FC<IDashboardProps> = ({}: IDashboardProps) => {
   return (
     <main className="min-h-screen flex">
       {/* Sidebar */}
-      <div className="max-w-[250px] w-1/4 bg-neutral-200 shadow-md flex flex-col pt-5">
+      <div className="w-[250px] bg-neutral-200 shadow-md flex flex-col pt-5">
         <div className="flex flex-col justify-center items-center px-2 pb-4 border-b border-b-white">
           <div className="p-1 border border-slate-500 rounded-full">
             <div className="rounded-full w-20 h-20 border border-slate-500">
