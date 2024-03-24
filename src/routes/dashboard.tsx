@@ -1,9 +1,9 @@
 import React from "react";
 import {  Outlet } from "react-router-dom";
 import noavatar from "../assets/noavatar.jpeg";
-import { SidebarList } from "../datas/SidebarList";
+import { SidebarList } from "../datas/D_SidebarList";
 import { ISidebarList, ISidebarListItem } from "../types/SidebarListType";
-import CNavLink from "../components/dashboard/NavLink";
+import CNavLink from "../components/dashboard/C_NavLink";
 import useAuth from "../customHooks/useAuth";
 import { useNavigate } from "react-router-dom";
 
@@ -58,7 +58,7 @@ const Dashboard: React.FC<IDashboardProps> = ({}: IDashboardProps) => {
       </div>
       {/* Sidebar */}
       {/* Main */}
-      <div className="w-3/4 flex-grow p-3">
+      <div className="w-3/4 flex-grow py-3 px-8">
         <Outlet />
       </div>
       {/* Main */}

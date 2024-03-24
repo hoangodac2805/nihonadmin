@@ -1,19 +1,25 @@
 import { create } from 'zustand';
+import { ICourseRes } from '../types/courseType';
+import { coursesService } from '../services/api/coursesApi';
 
 interface IState {
-    isLoading: boolean
+   courses: ICourseRes[];
 }
 interface IAction {
-    setLoadingOn: () => void;
-    setLoadingOff: () => void;
+    setCourses: (courses:ICourseRes[]) => void;
+    fetchCourses : () => void;
 }
 
-
-const useLoading = create<IState & IAction>((set) => ({
-    isLoading: false,
-    setLoadingOn: () => set({ isLoading: true }),
-    setLoadingOff: () => set({ isLoading: false })
+const useCourses = create<IState & IAction>((set) => ({
+    courses: [],
+    setCourses: (courses:ICourseRes[]) => set({ courses: [...courses] }),
+    fetchCourses : async ()=>{
+        let response = await coursesService.getAll();
+        if (response.status == 200) {
+          set({courses:[...response.data.data]});
+        }
+    }
 }))
 
 
-export default useLoading;
+export default useCourses;

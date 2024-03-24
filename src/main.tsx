@@ -2,12 +2,14 @@ import React from "react";
 import ReactDOM from "react-dom/client";
 import Dashboard from "./routes/dashboard.tsx";
 import "./index.css";
+import "react-quill/dist/quill.snow.css";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import Login from "./routes/login.tsx";
 import { AuthProvider, RequireAuth } from "./customHooks/useAuth.tsx";
-import Loading from "./components/Loading.tsx";
-import { Toaster } from 'react-hot-toast';
-import Courses from "./routes/Courses.tsx";
+import Loading from "./components/C_Loading.tsx";
+import { Toaster } from "react-hot-toast";
+import R_AddCourses from "./routes/Courses/R_AddCourses.tsx";
+import R_Courses from "./routes/Courses/R_Courses.tsx";
 const router = createBrowserRouter([
   {
     path: "/",
@@ -19,13 +21,11 @@ const router = createBrowserRouter([
     children: [
       {
         path: "/courses",
-        element: <Courses/>,
-        children: [
-          {
-            path: "add",
-            element: <div>add</div>,
-          },
-        ],
+        element: <R_Courses />,
+      },
+      {
+        path: "/courses/add",
+        element:<R_AddCourses/>
       },
     ],
   },
@@ -33,17 +33,13 @@ const router = createBrowserRouter([
     path: "/login",
     element: <Login />,
   },
-  {
-    path: "/loading",
-    element: <Loading />
-  }
 ]);
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
     <AuthProvider>
       <RouterProvider router={router} />
       <Loading />
-      <Toaster/>
+      <Toaster />
     </AuthProvider>
   </React.StrictMode>
 );

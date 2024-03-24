@@ -61,7 +61,7 @@ const Login = () => {
     );
 
   } else {
-    return <Navigate to="/" replace />
+    return <Navigate to="/courses/add" replace />
   }
 };
 
