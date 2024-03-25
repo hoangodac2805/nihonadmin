@@ -1,10 +1,13 @@
 import React, { useState, useContext, ReactNode, useEffect } from "react";
 import { Navigate } from "react-router-dom";
-import Cookies from "js-cookie";
+import { authenticationService } from "../services/api/authenticationApi";
+import useLoading from "./useLoading";
+import toast from 'react-hot-toast';
+import axios from "axios";
 
 interface AuthContextInterface {
   authed: boolean;
-  isLoading: boolean;
+  authedEmail?:string;
   login: (user: { email: string; password: string }) => Promise<void>;
   logout: () => Promise<void>;
 }
@@ -13,24 +16,22 @@ const authContext = React.createContext<AuthContextInterface | null>(null);
 
 function useAuth(): AuthContextInterface {
   const [authed, setAuthed] = useState(false);
-  const [isLoading, setIsLoading] = useState(true); // Add loading state
+  const [authedEmail, setAuthedEmail] = useState<string>('');
 
+  const loadingStore = useLoading();
   useEffect(() => {
     const checkLoginStatus = async () => {
       try {
-        const response = await fetch(
-          "http://localhost:8888/api/v1/authentication/loginByCookie",
-          {
-            credentials: "include",
-            method: "post",
-          }
-        );
-        const data = await response.json();
-        setAuthed(data.status);
+        loadingStore.setLoadingOn();
+        const response = await authenticationService.loginByCookie();
+        if (response.status == 200) {
+          setAuthedEmail(response.data.data?.email)
+          setAuthed(true);
+        }
       } catch (error) {
         console.error("Error checking login status:", error);
       } finally {
-        setIsLoading(false);
+        loadingStore.setLoadingOff();
       }
     };
 
@@ -39,24 +40,26 @@ function useAuth(): AuthContextInterface {
 
   return {
     authed,
-    isLoading,
+    authedEmail,
     login: (user) =>
+    
       new Promise(async (res) => {
-        await fetch("http://localhost:8888/api/v1/authentication/login", {
-          credentials: "include",
-          method: "post",
-          headers: {
-            Accept: "application/json",
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(user),
-        })
-          .then((res) => res.json())
-          .then((res) => {
-            if (res.status) {
-              setAuthed(true);
-            }
-          })
+        try {
+          loadingStore.setLoadingOn();
+          const response = await authenticationService.login(user);
+          if (response.status == 200) {
+            toast.success(response.data.message);
+            setAuthed(true);
+          }
+        } catch (error) {
+          if(axios.isAxiosError(error)){
+            toast.error(error.response?.data.message);
+          }else{
+            toast.error("Login failure!!! Please try again");
+          }
+        } finally {
+          loadingStore.setLoadingOff();
+        }
         res();
       }),
     logout: () =>
@@ -80,9 +83,6 @@ export default function AuthConsumer(): AuthContextInterface {
   return auth;
 }
 export function RequireAuth({ children }: { children: ReactNode }) {
-  const { authed, isLoading } = AuthConsumer();
-  if (isLoading) {
-    return <p>Loading...</p>; // Display loading message while checking
-  }
+  const { authed } = AuthConsumer();
   return authed === true ? children : <Navigate to="/login" replace />;
 }

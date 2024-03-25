@@ -1,9 +1,9 @@
 import React from "react";
 import {  Outlet } from "react-router-dom";
 import noavatar from "../assets/noavatar.jpeg";
-import { SidebarList } from "../datas/SidebarList";
+import { SidebarList } from "../datas/D_SidebarList";
 import { ISidebarList, ISidebarListItem } from "../types/SidebarListType";
-import CNavLink from "../components/dashboard/NavLink";
+import CNavLink from "../components/dashboard/C_NavLink";
 import useAuth from "../customHooks/useAuth";
 import { useNavigate } from "react-router-dom";
 
@@ -11,20 +11,20 @@ interface IDashboardProps {}
 
 
 const Dashboard: React.FC<IDashboardProps> = ({}: IDashboardProps) => {
-  const { logout} = useAuth();
+  const { logout,authedEmail} = useAuth();
   const navigate = useNavigate();
   
   return (
     <main className="min-h-screen flex">
       {/* Sidebar */}
-      <div className="max-w-[250px] w-1/4 bg-neutral-200 shadow-md flex flex-col pt-5">
+      <div className="w-[250px] bg-neutral-200 shadow-md flex flex-col pt-5">
         <div className="flex flex-col justify-center items-center px-2 pb-4 border-b border-b-white">
           <div className="p-1 border border-slate-500 rounded-full">
             <div className="rounded-full w-20 h-20 border border-slate-500">
               <img src={noavatar} alt="avatar" />
             </div>
           </div>
-          <p className="">hoangodac@gmail.com</p>
+          <p className="">{authedEmail}</p>
           <div
             onClick={() => {
               logout().then(()=>{
@@ -58,7 +58,7 @@ const Dashboard: React.FC<IDashboardProps> = ({}: IDashboardProps) => {
       </div>
       {/* Sidebar */}
       {/* Main */}
-      <div className="w-3/4 flex-grow p-3">
+      <div className="w-3/4 flex-grow py-3 px-8">
         <Outlet />
       </div>
       {/* Main */}

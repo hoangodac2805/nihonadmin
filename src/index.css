@@ -10,3 +10,14 @@ img {
 div,section,main {
     overflow: hidden;
 }
+
+form div{
+    overflow: visible;
+}
+.ql-container {
+    min-height: 200px;
+}
+
+.ql-editor *{
+    all: revert;
+}
