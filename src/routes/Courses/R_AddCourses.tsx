@@ -1,16 +1,16 @@
-import React, { useEffect, useState } from "react";
+import React, { useMemo, useState } from "react";
 import ReactQuill from "react-quill";
 import { useForm, SubmitHandler } from "react-hook-form";
 import { coursesService } from "../../services/api/coursesApi";
-import useLessons from "../../customHooks/useLessons";
 import { ILessonRes } from "../../types/lessonsType";
 import { useDebounce } from "../../customHooks/useDebounce";
 import { FcCheckmark } from "react-icons/fc";
 import useLoading from "../../customHooks/useLoading";
 import toast from "react-hot-toast";
 import axios from "axios";
+import useLessonProvider from "../../customHooks/swr/useLessonProvider";
 
-interface IR_AddCourses {}
+interface IR_AddCourses { }
 
 interface IAddCourseField {
   courseNameEn?: string;
@@ -19,15 +19,36 @@ interface IAddCourseField {
   thumbnailSrc?: FileList;
 }
 
-const R_AddCourses: React.FC<IR_AddCourses> = ({}: IR_AddCourses) => {
-  const lessonsState = useLessons();
+
+
+const R_AddCourses: React.FC<IR_AddCourses> = ({ }: IR_AddCourses) => {
+
   const loadingState = useLoading();
   const [desc, setDesc] = useState("");
-  const [lessonsByQS, setLessonsByQS] = useState<Array<ILessonRes>>(
-    lessonsState.lessons
-  );
+  const [qS, setQs] = useState<string>('');
+
   const [selectedLesson, setSelectedLesson] = useState<Array<ILessonRes>>([]);
   const [autoCompleteBlock, setAutoCompleteBlock] = useState<boolean>(false);
+
+  const { data } = useLessonProvider();
+  const lessonData = useMemo(() => {
+    if (!data) {
+      return []
+    };
+
+    const regex = new RegExp(qS, "i");
+    let returnData: ILessonRes[] = [];
+    data.data.forEach((lesson) => {
+      if (regex.test(lesson.lessonNameEn) ||
+        regex.test(lesson.lessonNameJp) ||
+        regex.test(lesson.lessonNameVn)) {
+        returnData.push(lesson);
+      }
+    })
+    return returnData;
+  }, [qS])
+
+
   const {
     register,
     handleSubmit,
@@ -38,7 +59,7 @@ const R_AddCourses: React.FC<IR_AddCourses> = ({}: IR_AddCourses) => {
     try {
       loadingState.setLoadingOn();
       let form = new FormData();
-      let listLessonId = selectedLesson.map((lesson)=> lesson._id);
+      let listLessonId = selectedLesson.map((lesson) => lesson._id);
 
       form.append("lessons", JSON.stringify(listLessonId));
       form.append("description", desc);
@@ -54,32 +75,29 @@ const R_AddCourses: React.FC<IR_AddCourses> = ({}: IR_AddCourses) => {
         }
       }
       let res = await coursesService.create(form);
-      if(res.status == 200) {
+      if (res.status == 200) {
         toast.success(res.data.message)
       }
     } catch (error) {
-      if(axios.isAxiosError(error)){
+      if (axios.isAxiosError(error)) {
         toast.error(error.response?.data.message);
-      }else{
+      } else {
         toast.error("Create course failure!!!");
       }
     } finally {
-      setTimeout(()=>{
+      setTimeout(() => {
         loadingState.setLoadingOff();
-      },1000)
+      }, 1000)
     }
   };
-
   const handleSearchLessons = (query: string) => {
-    setLessonsByQS(lessonsState.searchByJs(query));
-  };
+    console.log(query);
+
+    setQs(query);
+  }
 
   const debouncedSearchLessons = useDebounce(handleSearchLessons, 300);
-  useEffect(() => {
-    lessonsState.fetchLessons();
-    setLessonsByQS(lessonsState.lessons);
-  }, []);
-  
+
   return (
     <div className="min-h-screen w-full ">
       <h2 className="text-center text-2xl text-blue-800 mb-16">ADD COURSE</h2>
@@ -211,12 +229,11 @@ const R_AddCourses: React.FC<IR_AddCourses> = ({}: IR_AddCourses) => {
                 }}
               />
               <ul
-                className={`transition absolute w-full py-3 top-[100%] bg-white rounded-md left-0 max-h-40 overflow-y-auto border border-gray-200 ${
-                  autoCompleteBlock ? "block" : "hidden"
-                } `}
+                className={`transition absolute w-full py-3 top-[100%] bg-white rounded-md left-0 max-h-40 overflow-y-auto border border-gray-200 ${autoCompleteBlock ? "block" : "hidden"
+                  } `}
               >
-                {lessonsByQS.length > 0 ? (
-                  lessonsByQS.map((lesson) => {
+                {lessonData.length > 0 ? (
+                  lessonData.map((lesson) => {
                     let seleted = false;
                     let idx = selectedLesson.findIndex(
                       (item) => item._id == lesson._id
