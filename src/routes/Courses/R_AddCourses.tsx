@@ -3,14 +3,13 @@ import ReactQuill from "react-quill";
 import { useForm, SubmitHandler } from "react-hook-form";
 import { coursesService } from "../../services/api/coursesApi";
 import { ILessonRes } from "../../types/lessonsType";
-import { useDebounce } from "../../customHooks/useDebounce";
-import { FcCheckmark } from "react-icons/fc";
 import useLoading from "../../customHooks/useLoading";
 import toast from "react-hot-toast";
 import axios from "axios";
 import useLessonProvider from "../../customHooks/swr/useLessonProvider";
+import C_Autocomplete from "../../components/C_Autocomplete";
 
-interface IR_AddCourses { }
+interface IR_AddCourses {}
 
 interface IAddCourseField {
   courseNameEn?: string;
@@ -19,35 +18,29 @@ interface IAddCourseField {
   thumbnailSrc?: FileList;
 }
 
-
-
-const R_AddCourses: React.FC<IR_AddCourses> = ({ }: IR_AddCourses) => {
-
+const R_AddCourses: React.FC<IR_AddCourses> = ({}: IR_AddCourses) => {
   const loadingState = useLoading();
   const [desc, setDesc] = useState("");
-  const [qS, setQs] = useState<string>('');
-
+  const [qS, setQs] = useState<string>("");
   const [selectedLesson, setSelectedLesson] = useState<Array<ILessonRes>>([]);
-  const [autoCompleteBlock, setAutoCompleteBlock] = useState<boolean>(false);
-
   const { data } = useLessonProvider();
   const lessonData = useMemo(() => {
     if (!data) {
-      return []
-    };
-
+      return null;
+    }
     const regex = new RegExp(qS, "i");
     let returnData: ILessonRes[] = [];
     data.data.forEach((lesson) => {
-      if (regex.test(lesson.lessonNameEn) ||
+      if (
+        regex.test(lesson.lessonNameEn) ||
         regex.test(lesson.lessonNameJp) ||
-        regex.test(lesson.lessonNameVn)) {
+        regex.test(lesson.lessonNameVn)
+      ) {
         returnData.push(lesson);
       }
-    })
+    });
     return returnData;
-  }, [qS])
-
+  }, [qS]);
 
   const {
     register,
@@ -76,7 +69,7 @@ const R_AddCourses: React.FC<IR_AddCourses> = ({ }: IR_AddCourses) => {
       }
       let res = await coursesService.create(form);
       if (res.status == 200) {
-        toast.success(res.data.message)
+        toast.success(res.data.message);
       }
     } catch (error) {
       if (axios.isAxiosError(error)) {
@@ -87,21 +80,13 @@ const R_AddCourses: React.FC<IR_AddCourses> = ({ }: IR_AddCourses) => {
     } finally {
       setTimeout(() => {
         loadingState.setLoadingOff();
-      }, 1000)
+      }, 1000);
     }
   };
-  const handleSearchLessons = (query: string) => {
-    console.log(query);
-
-    setQs(query);
-  }
-
-  const debouncedSearchLessons = useDebounce(handleSearchLessons, 300);
 
   return (
     <div className="min-h-screen w-full ">
       <h2 className="text-center text-2xl text-blue-800 mb-16">ADD COURSE</h2>
-
       <form
         className="w-full overflow-visible"
         onSubmit={handleSubmit(submitForm)}
@@ -202,71 +187,16 @@ const R_AddCourses: React.FC<IR_AddCourses> = ({ }: IR_AddCourses) => {
             >
               Lessons
             </label>
-            <div className="w-full overflow-visible relative flex items-center px-4 flex-wrap bg-gray-200 text-gray-700 border border-gray-200 rounded leading-tight focus:outline-none focus:bg-white focus:border-gray-500">
-              {selectedLesson.map((item) => (
-                <div
-                  className="border border-black px-3 py-2 mr-2 rounded-lg"
-                  key={item._id}
-                >
-                  {item.lessonNameVn}
-                </div>
-              ))}
-              <input
-                className="appearance-none block w-auto min-w-14 bg-gray-200 text-gray-700 border border-gray-200 rounded py-3 leading-tight focus:outline-none"
-                type="text"
-                id="lessons"
-                placeholder="Search"
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                  debouncedSearchLessons(e.target.value)
-                }
-                onFocus={() => {
-                  setAutoCompleteBlock(true);
-                }}
-                onBlur={() => {
-                  setTimeout(() => {
-                    setAutoCompleteBlock(false);
-                  }, 300);
-                }}
-              />
-              <ul
-                className={`transition absolute w-full py-3 top-[100%] bg-white rounded-md left-0 max-h-40 overflow-y-auto border border-gray-200 ${autoCompleteBlock ? "block" : "hidden"
-                  } `}
-              >
-                {lessonData.length > 0 ? (
-                  lessonData.map((lesson) => {
-                    let seleted = false;
-                    let idx = selectedLesson.findIndex(
-                      (item) => item._id == lesson._id
-                    );
-                    if (idx !== -1) {
-                      seleted = true;
-                    }
-                    return (
-                      <li
-                        onFocus={() => {
-                          setAutoCompleteBlock(true);
-                        }}
-                        className="flex justify-between cursor-pointer transition rounded-md  my-2 px-3 py-2 hover:bg-gray-200"
-                        key={lesson._id}
-                        onClick={() => {
-                          if (seleted) {
-                            setSelectedLesson((state) => state.splice(idx, 1));
-                            return;
-                          }
-                          setSelectedLesson([...selectedLesson, lesson]);
-                        }}
-                      >
-                        {lesson.lessonNameJp}
-                        {seleted && <FcCheckmark />}
-                      </li>
-                    );
-                  })
-                ) : (
-                  <li className="px-3 py-2 text-red-500">No lesson match</li>
-                )}
-              </ul>
-            </div>
-            <div></div>
+            <C_Autocomplete
+              dataArray={lessonData ? lessonData :  data ? data.data : []}
+              fieldToShow="lessonNameVn"
+              onSearch={(value) => {
+                setQs(value);
+              }}
+              onSelect={(value) => {
+                setSelectedLesson(value);
+              }}
+            />
           </div>
         </div>
 

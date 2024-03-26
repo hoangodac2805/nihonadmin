@@ -1,45 +1,97 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
+import { useDebounce } from "../customHooks/useDebounce";
+import { FcCheckmark } from "react-icons/fc";
 
-const C_Autocomplete: React.FC<{ options: string[] }> = ({ options }) => {
-  const [inputValue, setInputValue] = useState('');
-  const [filteredOptions, setFilteredOptions] = useState<string[]>([]);
+interface IC_Autocomplete extends React.HTMLProps<HTMLDivElement> {
+  fieldToShow: string;
+  dataArray: Array<any>;
+  onSelect: (listSeleted: any) => void;
+  onSearch: (value: string) => void;
+}
+const C_Autocomplete: React.FC<IC_Autocomplete> = ({
+  dataArray,
+  fieldToShow,
+  onSelect,
+  onSearch,
+  ...res
+}) => {
+  const [selectedItem, setSelectedItem] = useState<Array<any>>([]);
+  const [qS, setQs] = useState<string>("");
+  const [autoCompleteShow, setAutoCompleteShow] = useState<boolean>(false);
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const inputValue = e.target.value;
-    setInputValue(inputValue);
-    const filteredOptions = options.filter(option =>
-      option.toLowerCase().includes(inputValue.toLowerCase())
-    );
-    setFilteredOptions(filteredOptions);
+  const handleSearchLessons = (query: string) => {
+    onSearch(query);
   };
-
-  const handleOptionClick = (option: string) => {
-    setInputValue(option);
-    setFilteredOptions([]);
-  };
-
+  const debouncedSearchLessons = useDebounce(handleSearchLessons, 300);
   return (
-    <div className="relative overflow-visible">
+    <div
+      {...res}
+      className="w-full overflow-visible relative flex items-center px-4 flex-wrap bg-gray-200 text-gray-700 border border-gray-200 rounded leading-tight focus:outline-none focus:bg-white focus:border-gray-500"
+    >
+      {selectedItem.map((item) => (
+        <div
+          className="border border-black px-3 py-2 mr-2 rounded-lg"
+          key={item[fieldToShow]}
+        >
+          {item[fieldToShow]}
+        </div>
+      ))}
       <input
+        className="appearance-none block w-auto min-w-14 bg-gray-200 text-gray-700 border border-gray-200 rounded py-3 leading-tight focus:outline-none"
         type="text"
-        className="w-full border border-gray-300 rounded-md py-2 px-4 focus:outline-none focus:border-blue-500"
-        value={inputValue}
-        onChange={handleInputChange}
-        placeholder="Type something..."
+        id="lessons"
+        placeholder="Search"
+        value={qS}
+        onChange={(e: React.ChangeEvent<HTMLInputElement>) =>{
+          debouncedSearchLessons(e.target.value);
+          setQs(e.target.value);
+        }
+        }
+        onFocus={() => {
+          setAutoCompleteShow(true);
+        }}
+        onBlur={() => {
+          setTimeout(() => {
+            setAutoCompleteShow(false);
+          }, 300);
+        }}
       />
-      {filteredOptions.length > 0 && (
-        <ul className="absolute z-10 w-full bg-white border border-gray-300 rounded-md mt-1">
-          {filteredOptions.map(option => (
-            <li
-              key={option}
-              className="py-1 px-4 text-black cursor-pointer hover:bg-gray-100"
-              onClick={() => handleOptionClick(option)}
-            >
-              {option}
-            </li>
-          ))}
-        </ul>
-      )}
+      <ul
+        className={`transition absolute w-full py-3 top-[100%] bg-white rounded-md left-0 max-h-40 overflow-y-auto border border-gray-200 ${
+          autoCompleteShow ? "block" : "hidden"
+        } `}
+      >
+        {dataArray.length > 0 ? (
+          dataArray.map((item) => {
+            const isSelected = selectedItem.findIndex((selectedItem) => selectedItem.id === item.id) !== -1;
+            return (
+              <li
+                onFocus={() => {
+                  setAutoCompleteShow(true);
+                }}
+                className="flex justify-between cursor-pointer transition rounded-md  my-2 px-3 py-2 hover:bg-gray-200"
+                key={item.id}
+                onClick={() => {
+                  const updatedSelectedItems = isSelected
+                  ? selectedItem.filter((selectedItem) => selectedItem.id !== item.id)
+                  : [...selectedItem, item];
+      
+                  setSelectedItem(updatedSelectedItems);
+                  onSelect(updatedSelectedItems);
+                  
+                  onSearch("");
+                  setQs("");
+                }}
+              >
+                {item[fieldToShow]}
+                {isSelected && <FcCheckmark />}
+              </li>
+            );
+          })
+        ) : (
+          <li className="px-3 py-2 text-red-500">No data match</li>
+        )}
+      </ul>
     </div>
   );
 };
